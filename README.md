@@ -241,6 +241,8 @@ export default function PackageRoute() {
 
 ```
 
+---
+
 ### action
 
 Like loader, action is a server-only function to handle data mutations and other actions. If a non-GET request is made to your route (POST, PUT, PATCH, DELETE) then the action is called before the loaders.
@@ -279,6 +281,8 @@ export default function Todos() {
 }
 ```
 
+---
+
 ### <Meta />
 
 This component renders all of the `<meta>` tags created by your route module `meta` export. These tags are important for things like search engine optimization (SEO). They can also be used by social media sites to display rich previews of your app.
@@ -310,6 +314,8 @@ export default function Root() {
 }
 ```
 
+---
+
 ### CatchBoundary
 
 A `CatchBoundary` is a React component that renders whenever an action or loader throws a `Response`.
@@ -331,6 +337,8 @@ export function CatchBoundary() {
   );
 }
 ```
+
+---
 
 ### ErrorBoundary
 
@@ -363,6 +371,8 @@ If `$invoiceId.tsx` exports an `ErrorBoundary` and an error is thrown in its com
 
 ![ErrorBoundary](https://remix.run/docs-images/error-boundary.png)
 
+---
+
 ### useFetcher
 
 Sometimes you want to call a loader outside of navigation, or call an action (and get the routes to reload) but you don't want the URL to change. Many interactions with the server aren't navigation events. This hook lets you plug your UI into your actions and loaders without navigating.
@@ -388,13 +398,9 @@ const CodalRemix = () => {
 }
 ```
 
---------------------------------
---------------------------------
---------------------------------
+---
 
 ### Demo
-
-**_Routing_**
 
 To get started, you'll use the Shopify CLI. In your Terminal, run the following command:
 

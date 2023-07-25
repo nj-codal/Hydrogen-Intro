@@ -283,7 +283,7 @@ export default function Todos() {
 
 ---
 
-### <Meta />
+### meta
 
 This component renders all of the `<meta>` tags created by your route module `meta` export. These tags are important for things like search engine optimization (SEO). They can also be used by social media sites to display rich previews of your app.
 

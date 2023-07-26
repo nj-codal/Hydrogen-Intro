@@ -117,131 +117,9 @@ The `remix.config.ts` file has a few build and development configuration options
 
 HydrogenJS is having a fairly good documentation for what has been added. But, you have to dig deeper into the documentation to get your exact answer.
 
-There is no mention to disable sourcemap from the build. Which makes app of the website vulnerable to easy copy paste.
+There is no mention to disable sourcemap from the build. Which makes app of the website vulnerable to easy copy paste `SHOPIFY_HYDROGEN_FLAG_SOURCEMAP=false` needs to be passed while build to create build without the sourcemap. This was provided by the support team when reached out for this issue. At this moment, their documentation has not been updated.
 
 ----
-
-### Server State > Client State
-
-Most React applications rely heavily on component state and context to provide data throughout the app tree. For example, on a product detail page there might be a product options selector. A simple implementation is to use component state to track what product options are selected:
-
-```jsx
-export function ProductOptions({ availableOptions }) {
-  const [option, setOption] = useState(getDefaultOption);
-
-  return (
-    <ListBox
-      availableOptions={availableOptions}
-      selectedOption={option}
-    />
-  );
-}
-```
-
-The problem with this code is that it quickly gets complicated. The selected product option and associated product variant should be tied to the URL. This is important so that the user can select a specific variant and then bookmark or share the URL without losing the selected state. So when a selected option is changed, the URL needs to be updated and getDefaultOption needs to be aware of the current URL state. Additionally, a context provider is often added so that any component in the tree can get access to product options.
-
-However, Remix makes synchronizing URL state with app state extremely easy. Consider this simplified Remix code:
-
-```jsx
-export async function loader({ request }) {
-  const product = await queryProductVariant(request.url);
-  return json({ product });
-}
-    
-export default function ProductDetailPage() {
-  const { product } = useLoaderData();
-
-  return (
-    <>
-      <ProductDetails product={product} />
-        {product.variants.map((variant) => (
-          <Link to={`/products/${variant.id}`}>
-            {variant.name}
-          </Link>
-        ))}
-    </>
-  );
-}
-```
-
----
-
-### loader
-One of the primary features of Remix is simplifying interactions with the server to get data into components.
-
-```tsx
-import { json } from "@remix-run/node"; // or cloudflare/deno
-import { useLoaderData } from "@remix-run/react";
-
-export async function loader() {
-  const res = await fetch("https://api.github.com/gists");
-  return json(await res.json());
-}
-
-export default function GistsRoute() {
-  const gists = useLoaderData<typeof loader>();
-  return (
-    <ul>
-      {gists.map((gist) => (
-        <li key={gist.id}>
-          <a href={gist.html_url}>{gist.id}</a>
-        </li>
-      ))}
-    </ul>
-  );
-}
-```
-
-With React streaming set up, now you can start adding Await usage for your slow data requests where you'd rather render a fallback UI. 
-
-```jsx
-import type { LoaderArgs } from "@remix-run/node"; // or cloudflare/deno
-import { defer } from "@remix-run/node"; // or cloudflare/deno
-import { Await, useLoaderData } from "@remix-run/react";
-import { Suspense } from "react";
-
-import { getPackageLocation } from "~/models/packages";
-
-export function loader({ params }: LoaderArgs) {
-  const packageLocationPromise = getPackageLocation(
-    params.packageId
-  );
-
-  return defer({
-    packageLocation: packageLocationPromise,
-  });
-}
-
-export default function PackageRoute() {
-  const data = useLoaderData<typeof loader>();
-
-  return (
-    <main>
-      <h1>Let's locate your package</h1>
-      <Suspense
-        fallback={<p>Loading package location...</p>}
-      >
-        <Await
-          resolve={data.packageLocation}
-          errorElement={
-            <p>Error loading package location!</p>
-          }
-        >
-          {(packageLocation) => (
-            <p>
-              Your package is at {packageLocation.latitude}{" "}
-              lat and {packageLocation.longitude} long.
-            </p>
-          )}
-        </Await>
-      </Suspense>
-    </main>
-  );
-}
-
-```
-
----
 
 ### action
 
@@ -392,10 +270,132 @@ const CodalRemix = () => {
   }, [fetcher]);
 
   // build UI with these
-  fetcher.state;
+  fetcher.state; // "idle", "submitting", "loading"
   fetcher.data;
   fetcher.submit;
 }
+```
+
+---
+
+### Server State > Client State
+
+Most React applications rely heavily on component state and context to provide data throughout the app tree. For example, on a product detail page there might be a product options selector. A simple implementation is to use component state to track what product options are selected:
+
+```jsx
+export function ProductOptions({ availableOptions }) {
+  const [option, setOption] = useState(getDefaultOption);
+
+  return (
+    <ListBox
+      availableOptions={availableOptions}
+      selectedOption={option}
+    />
+  );
+}
+```
+
+The problem with this code is that it quickly gets complicated. The selected product option and associated product variant should be tied to the URL. This is important so that the user can select a specific variant and then bookmark or share the URL without losing the selected state. So when a selected option is changed, the URL needs to be updated and getDefaultOption needs to be aware of the current URL state. Additionally, a context provider is often added so that any component in the tree can get access to product options.
+
+However, Remix makes synchronizing URL state with app state extremely easy. Consider this simplified Remix code:
+
+```jsx
+export async function loader({ request }) {
+  const product = await queryProductVariant(request.url);
+  return json({ product });
+}
+    
+export default function ProductDetailPage() {
+  const { product } = useLoaderData();
+
+  return (
+    <>
+      <ProductDetails product={product} />
+        {product.variants.map((variant) => (
+          <Link to={`/products/${variant.id}`}>
+            {variant.name}
+          </Link>
+        ))}
+    </>
+  );
+}
+```
+
+---
+
+### loader
+One of the primary features of Remix is simplifying interactions with the server to get data into components.
+
+```tsx
+import { json } from "@remix-run/node"; // or cloudflare/deno
+import { useLoaderData } from "@remix-run/react";
+
+export async function loader() {
+  const res = await fetch("https://api.github.com/gists");
+  return json(await res.json());
+}
+
+export default function GistsRoute() {
+  const gists = useLoaderData<typeof loader>();
+  return (
+    <ul>
+      {gists.map((gist) => (
+        <li key={gist.id}>
+          <a href={gist.html_url}>{gist.id}</a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+```
+
+With React streaming set up, now you can start adding Await usage for your slow data requests where you'd rather render a fallback UI. 
+
+```jsx
+import type { LoaderArgs } from "@remix-run/node"; // or cloudflare/deno
+import { defer } from "@remix-run/node"; // or cloudflare/deno
+import { Await, useLoaderData } from "@remix-run/react";
+import { Suspense } from "react";
+
+import { getPackageLocation } from "~/models/packages";
+
+export function loader({ params }: LoaderArgs) {
+  const packageLocationPromise = getPackageLocation(
+    params.packageId
+  );
+
+  return defer({
+    packageLocation: packageLocationPromise,
+  });
+}
+
+export default function PackageRoute() {
+  const data = useLoaderData<typeof loader>();
+
+  return (
+    <main>
+      <h1>Let's locate your package</h1>
+      <Suspense
+        fallback={<p>Loading package location...</p>}
+      >
+        <Await
+          resolve={data.packageLocation}
+          errorElement={
+            <p>Error loading package location!</p>
+          }
+        >
+          {(packageLocation) => (
+            <p>
+              Your package is at {packageLocation.latitude}{" "}
+              lat and {packageLocation.longitude} long.
+            </p>
+          )}
+        </Await>
+      </Suspense>
+    </main>
+  );
+}
+
 ```
 
 ---
